@@ -28,9 +28,6 @@ def temp_dir():
         shutil.rmtree(dir)
 
 def compile(filename, build_dir=""):
-    """gcc -shared -pthread -fPIC -fwrapv -O2 -Wall -fno-strict-aliasing \
-      $(CFLAGS) -o mod.so mod.c
-    """
     basename = ".".join(filename.split(".")[:-1])
     cname = join(build_dir, basename + ".c")
     pbs.cython(filename, o=cname)

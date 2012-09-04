@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 """
 Cython-based compiler
@@ -13,6 +14,12 @@ import tempfile
 
 # Third-Party Libraries
 import pbs
+
+# Metadata
+__author__ = u"Sébastien Boisgérault <Sebastien.Boisgerault@mines-paristech.fr>"
+__license__ = "MIT License"
+__url__ = "https://github.com/boisgera/cyc" 
+__version__ = None
 
 
 PYTHON_CFLAGS = str(pbs.pkg_config("python", cflags=True)).strip()

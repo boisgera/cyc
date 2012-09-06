@@ -5,6 +5,14 @@
 Cython-based compiler
 """
 
+#
+# TODO
+# ------------------------------------------------------------------------------
+#
+#   - support script generation (with cython --embed, see
+#     <http://www.behnel.de/cython200910/talk.html>).
+#
+
 # Python 2.7 Standard Library
 import contextlib
 import os.path

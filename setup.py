@@ -54,6 +54,7 @@ import cyc
 info = get_info(cyc)
 
 info["requires"] = ["pbs"]
+info["scripts"] = ["cyc"]
 
 distutils.core.setup(**info)
 

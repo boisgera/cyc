@@ -5,14 +5,6 @@
 Cython-based compiler
 """
 
-#
-# TODO
-# ------------------------------------------------------------------------------
-#
-#   - support script generation (with cython --embed, see
-#     <http://www.behnel.de/cython200910/talk.html>).
-#
-
 # Python 2.7 Standard Library
 import contextlib
 import os.path
@@ -22,6 +14,8 @@ import tempfile
 
 # Third-Party Libraries
 import pbs
+import script
+
 
 # Metadata
 __author__ = u"Sébastien Boisgérault <Sebastien.Boisgerault@mines-paristech.fr>"
@@ -29,10 +23,6 @@ __license__ = "MIT License"
 __url__ = "https://github.com/boisgera/cyc" 
 __version__ = None
 
-
-PYTHON_CFLAGS = str(pbs.pkg_config("python", cflags=True)).strip()
-
-join = os.path.join
 
 @contextlib.contextmanager
 def temp_dir():
@@ -42,20 +32,43 @@ def temp_dir():
     finally:
         shutil.rmtree(dir)
 
-def compile(filename, build_dir=""):
-    basename = ".".join(filename.split(".")[:-1])
-    cname = join(build_dir, basename + ".c")
-    pbs.cython(filename, o=cname)
-    args = "-shared -pthread -fPIC -fwrapv -O2 -Wall -fno-strict-aliasing".split()
-    args.append([PYTHON_CFLAGS])
-    args.append(["-o", basename + ".so", cname])
+CFLAGS = str(pbs.pkg_config("python", cflags=True)).strip()
+LIBS = str(pbs.pkg_config("python", libs=True)).strip()
+
+def compile(filename, main=False, build_dir=""):
+    name = ".".join(filename.split(".")[:-1])
+    basename = os.path.basename(name)
+    cname = os.path.join(build_dir, basename + ".c")
+    pbs.cython(filename, "--embed", o=cname)
+    if main:
+        args = [CFLAGS]
+        args.append(["-o", name, cname])
+        args.append(LIBS)
+    else:
+        args = ["-shared", "-pthread", "-fPIC", CFLAGS]
+        args.append(["-o", name + ".so", cname])
     pbs.gcc(*args)
 
-def main(filenames):
-    with temp_dir() as build_dir:
-        for filename in filenames:
-            compile(filename, build_dir)
+def main(args=None):
+    args = args or sys.argv[1:]
+    spec = "help main" 
+    options, filenames = script.parse(spec, args)
+    if options.help or not filenames:
+        print help()
+    else:
+        main = bool(options.main)
+        with temp_dir() as build_dir:
+            for filename in filenames:
+                compile(filename, main=main, build_dir=build_dir)
+
+def help():
+    """usage:
+
+    cyc [-m/--main] [FILENAMES]
+"""
+    return help.__doc__
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
+
 
